@@ -1,0 +1,71 @@
+# Standard variables for makefile
+# simultaneous parallel jobs & load average limit
+MAXJOBS = 1
+MAXLOAD = 1
+
+# standard
+SHELL     = sh
+MAKE      = make
+MAKEFILE  = Makefile
+MAKEFLAGS = -r -j$(MAXJOBS) -l$(MAXLOAD)
+
+# utils
+FGEN    = fgen
+F2HTML  = f2html
+ECHO    = echo
+RM      = rm
+CP      = cp
+MV      = mv
+CD      = cd
+MKDIR   = mkdir
+TAR     = tar
+GZIP    = gzip
+INSTALL = install
+AR      = ar
+
+# default flags
+FPPFLAGS = 
+CCFLAGS  = 
+FFLAGS   = 
+LDFLAGS  = 
+ARFLAGS  = -r
+
+# Set project directory one level above of Makefile directory. 
+# $(CURDIR) is a GNU make variable containing the path to 
+# the current working directory
+
+PROJDIR   := $(realpath $(CURDIR)/..)
+SOURCEDIR := $(PROJDIR)/src
+CONFIGDIR := $(PROJDIR)/etc
+BINDIR    := $(PROJDIR)/bin
+INCDIR    := $(PROJDIR)/include
+BUILDDIR  := $(PROJDIR)/build
+
+
+# Check that given variables are set and all have non-empty values,
+# die with an error otherwise.
+#
+# Params:
+#   1. Variable name(s) to test.
+#   2. (optional) Error message to print.
+check_die = \
+    $(strip $(foreach 1,$1, \
+        $(call __check_defined,$1,$(strip $(value 2)))))
+__check_defined = \
+    $(if $(value $1),, \
+      $(error *** ERROR *** Undefined "$1"$(if $2, ($2))))
+
+# Check that given variables are set and all have non-empty values,
+# print an warning otherwise.
+#
+# Params:
+#   1. Variable name(s) to test.
+#   2. (optional) Warning message to print.
+
+check_wrn = \
+    $(strip $(foreach 1,$1, \
+        $(call __check,$1,$(strip $(value 2)))))
+__check = \
+    $(if $(value $1),, \
+      $(warning *** WARNING *** undefined "$1"$(if $2, ($2))))
+

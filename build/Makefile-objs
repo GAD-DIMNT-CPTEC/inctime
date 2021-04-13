@@ -1,0 +1,8 @@
+# Automatically generated objects. Dom Out  2 12:15:24 BRT 2011
+# fgen v0.3 (C) 1997,98 Beroud Jean-Marc
+
+OBJS = \
+	inctime.o \
+	m_stdio.o \
+	m_string.o \
+	m_time.o

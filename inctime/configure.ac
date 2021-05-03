@@ -104,6 +104,6 @@ installed]),[],[with_$1=default])
 # You need to pass all directories where there is source code (including the base
 # directory containing all of the source code (which won't need a path pre-pended
 # to the 'Makefile' keyword).
-AC_OUTPUT(Makefile src/Makefile)
+AC_OUTPUT(Makefile libmisc/Makefile src/Makefile)
 
 

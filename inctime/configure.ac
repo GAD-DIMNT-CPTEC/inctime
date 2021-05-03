@@ -1,84 +1,61 @@
 # AC_INIT takes two parameters, the package name and a version number.
 AC_INIT([inctime], [1.0], [joao.gerd@inpe.br])
-#AC_CONFIG_MACRO_DIRS([m4])
+AC_CONFIG_MACRO_DIRS([m4])
 # AC_CONFIG_SRCDIR takes one parameter, the path and filename
 # for one of the source code files.
 AC_CONFIG_SRCDIR([src/inctime.f90])
 AM_INIT_AUTOMAKE
 AC_PROG_LIBTOOL
 
-# Include debug option to configure file
-AC_ARG_ENABLE(debug,
-AS_HELP_STRING([--enable-debug],
-               [enable debugging, default: no]),
-[case "${enableval}" in
-             yes) debug=true ;;
-             no)  debug=false ;;
-             *)   AC_MSG_ERROR([bad value ${enableval} for --enable-debug]) ;;
-esac],
-[debug=false])
+AC_ARG_ENABLE([debug],
+    AS_HELP_STRING([--enable-debug], [Enable debugging flags [default=no]]))
 
-# Include optimization option to configure file
-AC_ARG_ENABLE(optiminzation,
-AS_HELP_STRING([--enable-optimization],
-               [enable optimization, default: no]),
-[case "${enableval}" in
-             yes) opt=true ;;
-             no)  opt=false ;;
-             *)   AC_MSG_ERROR([bad value ${enableval} for --enable-optimization]) ;;
-esac],
-[opt=false])
+AC_ARG_ENABLE([opt],
+    AS_HELP_STRING([--enable-opt], [Enable optiminzation flags [default=no]]))
 
-# Include profile option to configure file
-AC_ARG_ENABLE(profile,
-AS_HELP_STRING([--enable-profile],
-               [enable profile, default: no]),
-[case "${enableval}" in
-             yes) pro=true ;;
-             no)  pro=false ;;
-             *)   AC_MSG_ERROR([bad value ${enableval} for --enable-profile]) ;;
-esac],
-[pro=false])
+AC_ARG_ENABLE([dbl],
+    AS_HELP_STRING([--enable-dbl], [Enable double precision flags [default=no]]))
 
-
-# AC_PROG_FC This is required if any Fortran 90/95 source is included.
-AC_PROG_FC([gfortran ifort])
-# Set flags for gfortran
-if test "x$FC" == xgfortran;then
-   AC_SUBST([FCFLAGS], [""])
-   AC_SUBST([LDFLAGS], [""])
-   # Debug flags
-   if test "x$debug" == xtrue;then
-      FCFLAGS="$FCFLAGS -DDEBUG -g -Wall -fbacktrace"
-      LDFLAGS="$LDFLAGS -g -ftraceback"
-   fi
-   # Opt flags
-   if test "x$opt" == xtrue;then
-      FCFLAGS="$FCFLAGS -O3"
-   fi
-   # Profile flags
-   if test "x$pro" == xtrue;then
-      FCFLAGS="$FCFLAGS -pg"
-   fi
+# Compiler specific thinks
+AC_ARG_ENABLE([cray],
+    AS_HELP_STRING([--enable-cray[=ARG]], [Enable cray environment [default=no]]))
+    dnl ENABLE-CRAY $enable_cray
+    if test "x$enable_cray" != "x";then
+       enable_mpi=yes
+       AC_PROG_FC([ftn])
+       if test "x$FC" = "x";then
+          AC_MSG_ERROR([No fortran compiler found !])
+       fi
+       case $enable_cray in
+          gnu) source config/flags.gnu ;;
+          cray) source config/flags.cray;;
+          *)AC_MSG_ERROR([Problem : --enable-cray=$enable_cray was set, you must choose --enable-cray=gnu or --enable-cray=cray !])
+       esac
+    else
+       AC_PROG_FC([gfortran ifort])
+       if test "x$FC" = "x";then
+          AC_MSG_ERROR([No fortran compiler found !])
+       fi
+       case $FC in
+          gfortran) source config/flags.gnu;;
+          ifort) source config/flags.intel;;
+          *)AC_MSG_ERROR([Problem : Found $FC compiler, but this compiler doesnot have support, use gfortran or ifort !])
+       esac
+    fi
+# Configure flags
+AC_SUBST([FCFLAGS],[$DFLT_FCFLAGS])
+AC_SUBST([LDFLAGS],[$LNK_FCFLAGS])
+if test "x$enable_debug" = "xyes";then
+   AX_APPEND_FLAG([$DBG_FCFLAGS],[FCFLAGS])
 fi
-# Set flags for ifort
-if test "x$FC" == xifort;then
-   AC_SUBST([FCFLAGS], [""])
-   AC_SUBST([LDFLAGS], [""])
-   # Debug flags
-   if test "x$debug" == xtrue;then
-      FCFLAGS="$FCFLAGS -DDEBUG -g -Wall -traceback"
-      LDFLAGS="$LDFLAGS -g -traceback"
-   fi
-   # Opt flags
-   if test "x$opt" == xtrue;then
-      FCFLAGS="$FCFLAGS -fast"
-   fi
-   # Profile flags
-   if test "x$pro" == xtrue;then
-      FCFLAGS="$FCFLAGS -pg"
-   fi
+if test "x$enable_opt" = "xyes";then
+   AX_APPEND_FLAG([$OPT_FCFLAGS],[FCFLAGS])
 fi
+if test "x$enable_dbl" = "xyes";then
+   AX_APPEND_FLAG([$DBL_FCFLAGS],[FCFLAGS])
+fi
+
+
 # Find the compiler flag to include Fortran 90 module information from 
 # another directory, and store that in the FC_MODINC variable.
 AC_FC_MODULE_FLAG
@@ -89,13 +66,16 @@ fi
 # Find the compiler flag to write Fortran 90 module information to
 # another directory, and store that in the FC_MODOUT variable.
 AC_FC_MODULE_OUTPUT_FLAG
-FCFLAGS="$FC_MODOUT../include"
+FCFLAGS="$FCFLAGS $FC_MODOUT../include"
 
 # Find the Fortran 90 module file name extension
 AC_FC_MODULE_EXTENSION
 
+# By default, this macro turns on shared libraries if they are available,
+# and also enables static libraries if they don’t conflict with the shared
+# libraries.
+LT_INIT
 
-AC_PROG_RANLIB
 # This is a reusable macro for providing --with-libfoo functionality.
 # 
 # REQUIRE_LIB(name,lib,testfn,description)
@@ -124,6 +104,6 @@ installed]),[],[with_$1=default])
 # You need to pass all directories where there is source code (including the base
 # directory containing all of the source code (which won't need a path pre-pended
 # to the 'Makefile' keyword).
-AC_OUTPUT(Makefile src/Makefile libmisc/Makefile)
+AC_OUTPUT(Makefile src/Makefile)
 
 

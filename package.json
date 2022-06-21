@@ -1,0 +1,19 @@
+{
+  "name": "@GAD-DIMNT-CPTEC/inctime",
+  "version": "1.0.0",
+  "description": "Utilitário escrito em fortran 90 com a finalidade de realizar cálculos entre datas diferentes.",
+  "author": "João Gerd Zell de Mattos <joao.gerd@inpe.br>",
+  "homepage": "https://github.com/GAD-DIMNT-CPTEC/inctime#readme",
+  "keywords": [
+    "fortran"
+    ],
+  "bugs": "https://github.com/GAD-DIMNT-CPTEC/inctime/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GAD-DIMNT-CPTEC/inctime.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
+  "license": "GNU"
+}
